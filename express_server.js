@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
 
-const urlDatabase = {
+let urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
@@ -40,34 +40,51 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[req.params.shortURL];
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    shortURL,
+    longURL,
   };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  // console.log(req.body); // Log the POST request body to the console
+  const newfigure = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[newfigure] = longURL;
+  res.redirect(`/urls/${newfigure}`);
 });
 
-function generateRandomString(input) {
-  let randomResponse = "";
-  let answer = "";
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL); //res stands for response
+});
+
+function generateRandomString() {
   let randomCharacters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (let i = 0; i < randomCharacters.length; i++) {
-    randomResponse += randomCharacters[i].charAt(
-      Math.random() * randomCharacters.length
-    );
-  }
-
-  while (answer.length <= randomResponse.length) {
-    return (answer += randomResponse);
-  }
-  console.log(answer);
+  let randomResponse1 =
+    randomCharacters.split("")[Math.floor(Math.random() * 62)];
+  let randomResponse2 =
+    randomCharacters.split("")[Math.floor(Math.random() * 62)];
+  let randomResponse3 =
+    randomCharacters.split("")[Math.floor(Math.random() * 62)];
+  let randomResponse4 =
+    randomCharacters.split("")[Math.floor(Math.random() * 62)];
+  let randomResponse5 =
+    randomCharacters.split("")[Math.floor(Math.random() * 62)];
+  let randomResponse6 =
+    randomCharacters.split("")[Math.floor(Math.random() * 62)];
+  let answer =
+    randomResponse1 +
+    randomResponse2 +
+    randomResponse3 +
+    randomResponse4 +
+    randomResponse5 +
+    randomResponse6;
+  console.log(answer, "this is answer");
+  return answer;
 }
-
-generateRandomString(5);
