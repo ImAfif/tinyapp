@@ -1,4 +1,5 @@
 const bodyParser = require("body-parser");
+const { json } = require("express");
 
 const express = require("express");
 const app = express();
@@ -45,3 +46,28 @@ app.get("/urls/:shortURL", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
+
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+});
+
+function generateRandomString(input) {
+  let randomResponse = "";
+  let answer = "";
+  let randomCharacters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (let i = 0; i < randomCharacters.length; i++) {
+    randomResponse += randomCharacters[i].charAt(
+      Math.random() * randomCharacters.length
+    );
+  }
+
+  while (answer.length <= randomResponse.length) {
+    return (answer += randomResponse);
+  }
+  console.log(answer);
+}
+
+generateRandomString(5);
