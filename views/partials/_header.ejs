@@ -9,14 +9,15 @@
 
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <% if (username) { %>
-            <b>Your login is: </b> <%= username%> 
-          <form class="form-inline" action="/logout" method="POST">
-         <button type="submit" class="btn btn-light">Logout</button>
+
+        <% if (user) { %>
+            <b>Your login is: </b> <%= user.email%> 
+          <form class="form-inline" action="/login" method="get">
+         <a href="/login" action= "/logout" class="nav-item nav-link"><button type="button" class="btn btn-light">Logout</button></a>
       </form>
         <% } else{%>
-      <form class="form-inline" action="/login" method="POST">
-         <input type="text" name="username" placeholder="Enter Username:"><button type="submit" class="btn btn-light">Login</button>
+      <a href="/login" class="nav-item nav-link"><button type="button" class="btn btn-light">Login</button>
+      <a href="/register" class="nav-item nav-link"><button type="button" class="btn btn-warning">Register</button></a>
       </form>
       <% } %>
         <a class="nav-item nav-link" href="/urls">My URLs</a>
