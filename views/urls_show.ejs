@@ -16,6 +16,7 @@
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
     <div class="card-footer text-muted">
+      <% if (user) { %> 
       <h3><b>Edit:</b></h3>
       <form class="form-inline" action="/urls/<%= shortURL %>" method="POST" style="justify-content:center">
         <div class="form-group mb-2">
@@ -24,6 +25,7 @@
           <button type="submit" class="btn btn-primary">Submit</button>
         </div>
       </form>
+      <% } %>
     </div>
 
   </div>
