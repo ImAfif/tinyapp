@@ -11,7 +11,7 @@
       <div class="navbar-nav">
 
         <% if (user) { %>
-            <b>Your login is: <%= email %>  </b> 
+            <b>Your login is: <%= user.email %>  </b> 
           <form action="/logout" method="post" class="nav-item nav-link"><button class="btn btn-light">Logout</button></a>
       </form>
         <% } else{%>
