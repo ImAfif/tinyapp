@@ -1,3 +1,4 @@
+//inputting code to make this work
 const bodyParser = require("body-parser");
 const { json } = require("express");
 const express = require("express");
@@ -6,26 +7,23 @@ const PORT = 8080;
 const cookieSession = require("cookie-session");
 const { emailchecker } = require("./views/helpers");
 
+//prereq stuff
 let bcrypt = require("bcryptjs");
-
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
-
 app.set("view engine", "ejs");
-
 const salt = bcrypt.genSaltSync(10);
-
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.set("view engine", "ejs");
 
+//cookie implementation
 app.use(
   cookieSession({
     name: "session",
     keys: ["key1", "key2"],
   })
 );
-
+//urldatabase object
 let urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
@@ -34,7 +32,7 @@ let urlDatabase = {
 };
 
 let user1Password = "asdf";
-
+//object for users
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -42,10 +40,10 @@ const users = {
     password: bcrypt.hashSync(user1Password, salt),
   },
 };
-
+//redirects to
 app.get("/", (req, res) => {
-  req.session.user_id = "user_id";
-  if (req.session.user_id === true) {
+  let userID = req.session["user_id"];
+  if (userID) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
