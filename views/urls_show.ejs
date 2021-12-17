@@ -23,7 +23,6 @@
         </p>
       </div>
       <div class="card-footer text-muted">
-        <!-- <% if (user) { %> -->
         <h3><b>Edit:</b></h3>
         <form
           class="form-inline"
@@ -40,12 +39,12 @@
               placeholder="http://"
               style="width: 300px; margin: 1em"
             />
+            <!-- an if statement is here. this ensures that the edit function is only available to the correct user. otherwise, hidden for all webiste users-->
             <% if (user) { %>
             <button type="submit" class="btn btn-primary">Submit</button>
             <% } %>
           </div>
         </form>
-        <!-- <% } %> -->
       </div>
     </div>
     <!-- Bootstrap JS -->

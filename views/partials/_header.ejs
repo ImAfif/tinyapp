@@ -10,6 +10,7 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
 
+        <!-- checks to see if a user is logged in and updates nav/header settings.-->
         <% if (user) { %>
             <b>Your login is: <%= user.email %>  </b> 
           <form action="/logout" method="post" class="nav-item nav-link"><button class="btn btn-light">Logout</button></a>
