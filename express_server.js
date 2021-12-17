@@ -40,7 +40,7 @@ const users = {
     password: bcrypt.hashSync(user1Password, salt),
   },
 };
-//redirects to
+//redirects to /urls (fixed)
 app.get("/", (req, res) => {
   let userID = req.session["user_id"];
   if (userID) {
@@ -62,6 +62,7 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//redirects under certain conditions
 app.get("/urls", (req, res) => {
   let userID = req.session["user_id"];
 
@@ -80,6 +81,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//redirects under certain conditions
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
     res.redirect("/login");
@@ -91,14 +93,15 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+//redirects under certain conditions
 app.get("/urls/:shortURL", (req, res) => {
   let userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[req.params.shortURL].longURL;
 
-  if (userID !== urlDatabase[shortURL]["userID"]) {
-    return undefined;
-  }
+  // if (userID === urlDatabase[shortURL]["userID"]) {
+  //   return false;
+  // }
   const templateVars = {
     shortURL,
     longURL,
@@ -107,6 +110,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//sends a post to /urls
 app.post("/urls", (req, res) => {
   const newfigure = generateRandomString();
   const longURL = req.body.longURL;
@@ -117,18 +121,21 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newfigure}`);
 });
 
+//redirects under certain conditions to longurl
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
 });
 
+//sends a post to /urls/shorturl/delete
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect(`/urls/`);
 });
 
+//sends a post to /urls/shorturl
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
@@ -140,11 +147,13 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect(`/urls/`);
 });
 
+//sends a post to /logout
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect(`/login`);
 });
 
+//redirects under certain conditions within /register
 app.get("/register", (req, res) => {
   if (req.session["user_id"]) {
     res.redirect("/urls");
@@ -153,6 +162,7 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
+//sends a post to /register
 app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
@@ -181,6 +191,7 @@ app.get("/login", (req, res) => {
   res.render("login");
 });
 
+//sends a post to /login
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -203,6 +214,7 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+//generates a random string for url
 function generateRandomString() {
   let randomCharacters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
