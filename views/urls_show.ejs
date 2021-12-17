@@ -22,6 +22,7 @@
           Short URL: <a href="<%=longURL%>"><%=shortURL%></a>
         </p>
       </div>
+      <% if (user) { %>
       <div class="card-footer text-muted">
         <h3><b>Edit:</b></h3>
         <form
@@ -40,12 +41,12 @@
               style="width: 300px; margin: 1em"
             />
             <!-- an if statement is here. this ensures that the edit function is only available to the correct user. otherwise, hidden for all webiste users-->
-            <% if (user) { %>
+
             <button type="submit" class="btn btn-primary">Submit</button>
-            <% } %>
           </div>
         </form>
       </div>
+      <% } %>
     </div>
     <!-- Bootstrap JS -->
     <script
