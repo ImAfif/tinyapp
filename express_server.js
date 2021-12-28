@@ -1,6 +1,5 @@
 //inputting code to make this work
 const bodyParser = require("body-parser");
-const { json } = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080;
@@ -8,7 +7,7 @@ const cookieSession = require("cookie-session");
 const { emailchecker } = require("./views/helpers");
 
 //prereq stuff
-let bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
@@ -23,8 +22,9 @@ app.use(
     keys: ["key1", "key2"],
   })
 );
+
 //urldatabase object
-let urlDatabase = {
+const urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
     userID: "userRandomID",
@@ -32,6 +32,8 @@ let urlDatabase = {
 };
 
 let user1Password = "asdf";
+
+//"asdf"
 //object for users
 const users = {
   userRandomID: {
@@ -42,7 +44,7 @@ const users = {
 };
 //redirects to /urls (fixed)
 app.get("/", (req, res) => {
-  let userID = req.session["user_id"];
+  const userID = req.session["user_id"];
   if (userID) {
     res.redirect("/urls");
   } else {
@@ -64,7 +66,7 @@ app.get("/hello", (req, res) => {
 
 //redirects under certain conditions
 app.get("/urls", (req, res) => {
-  let userID = req.session["user_id"];
+  const userID = req.session["user_id"];
 
   const newVar = {};
   for (let url in urlDatabase) {
@@ -83,11 +85,11 @@ app.get("/urls", (req, res) => {
 
 //redirects under certain conditions
 app.get("/urls/new", (req, res) => {
-  if (!req.session.user_id) {
-    res.redirect("/login");
-    return;
+  const userID = req.session["user_id"];
+
+  if (!userID || !users[userID]) {
+    return res.redirect("/register");
   }
-  let userID = req.session["user_id"];
 
   const templateVars = { user: users[userID] };
   res.render("urls_new", templateVars);
@@ -95,25 +97,44 @@ app.get("/urls/new", (req, res) => {
 
 //redirects under certain conditions
 app.get("/urls/:shortURL", (req, res) => {
-  let userID = req.session["user_id"];
+  const userID = req.session["user_id"];
+
+  if (!userID || !users[userID]) {
+    res.redirect("/register");
+  }
+
   const shortURL = req.params.shortURL;
+
+  if (userID !== urlDatabase[shortURL].userID) {
+    res.status(401).send("You are not authorized to see this information");
+  }
+
   const longURL = urlDatabase[req.params.shortURL].longURL;
 
-  // if (userID === urlDatabase[shortURL]["userID"]) {
-  //   return false;
-  // }
   const templateVars = {
     shortURL,
     longURL,
     user: users[userID],
   };
+
   res.render("urls_show", templateVars);
 });
 
 //sends a post to /urls
 app.post("/urls", (req, res) => {
   const newfigure = generateRandomString();
-  const longURL = req.body.longURL;
+  let longURL = req.body.longURL;
+
+  const userID = req.session["user_id"];
+
+  if (!userID || !users[userID]) {
+    res.redirect("/register");
+  }
+
+  if (!longURL.includes("http")) {
+    longURL = `http://${longURL}`;
+  }
+
   urlDatabase[newfigure] = {
     userID: req.session["user_id"],
     longURL,
@@ -124,22 +145,33 @@ app.post("/urls", (req, res) => {
 //redirects under certain conditions to longurl
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 //sends a post to /urls/shorturl/delete
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = req.session["user_id"];
+
+  if (!userID || !users[userID]) {
+    res.redirect("/register");
+  }
+
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
+  delete urlDatabase[shortURL].longURL;
   res.redirect(`/urls/`);
 });
 
 //sends a post to /urls/shorturl
 app.post("/urls/:shortURL", (req, res) => {
+  const userID = req.session["user_id"];
+
+  if (!userID || !users[userID]) {
+    res.redirect("/register");
+  }
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-  let newUrlDatabase = {
+  const newUrlDatabase = {
     longURL: longURL,
     userID: req.session["user_id"],
   };
@@ -164,8 +196,8 @@ app.get("/register", (req, res) => {
 
 //sends a post to /register
 app.post("/register", (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
+  const { email, password } = req.body;
+
   if (!email || !password) {
     return res.status(400).send("Registration credentials cannot be blank");
   }
@@ -174,13 +206,18 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Username/Email already taken");
   }
   const id = generateRandomString();
-  users[id] = {
-    id: id,
-    email: email,
-    password: password,
-  };
-  req.session["user_id"] = id;
-  res.redirect("/login");
+  bcrypt.hash(req.body.password, 10, function (err, hash) {
+    users[id] = {
+      id: id,
+      email: email,
+      password: hash,
+    };
+    if (err) {
+      return res.status(500).send("Something went wrong with hashing password");
+    }
+    req.session["user_id"] = id;
+    res.redirect("/login");
+  });
 });
 
 app.get("/login", (req, res) => {
@@ -205,10 +242,10 @@ app.post("/login", (req, res) => {
 
   const doThePasswordsMatch = bcrypt.compareSync(
     password,
-    users["userRandomID"]["password"]
+    users[user.id].password
   );
   if (!doThePasswordsMatch) {
-    return { err: "Password is invalid", data: null };
+    return res.status(401).send("password is invalid");
   }
   req.session["user_id"] = user.id;
   res.redirect("/urls");
@@ -216,28 +253,7 @@ app.post("/login", (req, res) => {
 
 //generates a random string for url
 function generateRandomString() {
-  let randomCharacters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let randomResponse1 =
-    randomCharacters.split("")[Math.floor(Math.random() * 62)];
-  let randomResponse2 =
-    randomCharacters.split("")[Math.floor(Math.random() * 62)];
-  let randomResponse3 =
-    randomCharacters.split("")[Math.floor(Math.random() * 62)];
-  let randomResponse4 =
-    randomCharacters.split("")[Math.floor(Math.random() * 62)];
-  let randomResponse5 =
-    randomCharacters.split("")[Math.floor(Math.random() * 62)];
-  let randomResponse6 =
-    randomCharacters.split("")[Math.floor(Math.random() * 62)];
-  let answer =
-    randomResponse1 +
-    randomResponse2 +
-    randomResponse3 +
-    randomResponse4 +
-    randomResponse5 +
-    randomResponse6;
-  return answer;
+  return Math.random().toString(36).substr(2, 8);
 }
 
 app.use(function (req, res, next) {
