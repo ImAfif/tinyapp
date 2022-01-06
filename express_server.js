@@ -129,37 +129,45 @@ app.post("/urls", (req, res) => {
 
   if (!userID || !users[userID]) {
     res.redirect("/register");
-  }
+  } else {
+    if (!longURL.includes("http")) {
+      longURL = `http://${longURL}`;
+    }
 
-  if (!longURL.includes("http")) {
-    longURL = `http://${longURL}`;
+    urlDatabase[newfigure] = {
+      userID: req.session["user_id"],
+      longURL,
+    };
+    res.redirect(`/urls/${newfigure}`);
   }
-
-  urlDatabase[newfigure] = {
-    userID: req.session["user_id"],
-    longURL,
-  };
-  res.redirect(`/urls/${newfigure}`);
 });
 
 //redirects under certain conditions to longurl
 app.get("/u/:shortURL", (req, res) => {
+  const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  res.redirect(longURL);
+  if (!userID || !users[userID]) {
+    res.redirect(longURL);
+  } else urlDatabase[shortURL].userID !== userID;
+  {
+    res.redirect("/register");
+  }
 });
 
 //sends a post to /urls/shorturl/delete
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
-
+  const shortURL = req.params.shortURL;
   if (!userID || !users[userID]) {
     res.redirect("/register");
+  } else if (urlDatabase[shortURL].userID !== userID) {
+    res.redirect("/register");
+  } else {
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL].longURL;
+    res.redirect(`/urls/`);
   }
-
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL].longURL;
-  res.redirect(`/urls/`);
 });
 
 //sends a post to /urls/shorturl
