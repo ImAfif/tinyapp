@@ -101,16 +101,17 @@ app.get("/urls/:shortURL", (req, res) => {
 
   if (!userID || !users[userID]) {
     res.redirect("/register");
+    return;
   }
-
+  if (urlDatabase[shortURL].userID !== userID) {
+    res.redirect("/register");
+    return;
+  }
   const shortURL = req.params.shortURL;
-
   if (userID !== urlDatabase[shortURL].userID) {
     res.status(401).send("You are not authorized to see this information");
   }
-
   const longURL = urlDatabase[req.params.shortURL].longURL;
-
   const templateVars = {
     shortURL,
     longURL,
@@ -124,22 +125,23 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const newfigure = generateRandomString();
   let longURL = req.body.longURL;
-
   const userID = req.session["user_id"];
-
   if (!userID || !users[userID]) {
     res.redirect("/register");
-  } else {
-    if (!longURL.includes("http")) {
-      longURL = `http://${longURL}`;
-    }
-
-    urlDatabase[newfigure] = {
-      userID: req.session["user_id"],
-      longURL,
-    };
-    res.redirect(`/urls/${newfigure}`);
+    return;
   }
+  if (urlDatabase[shortURL].userID !== userID) {
+    res.redirect("/register");
+    return;
+  }
+  if (!longURL.includes("http")) {
+    longURL = `http://${longURL}`;
+  }
+  urlDatabase[newfigure] = {
+    userID: req.session["user_id"],
+    longURL,
+  };
+  res.redirect(`/urls/${newfigure}`);
 });
 
 //redirects under certain conditions to longurl
@@ -161,13 +163,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   if (!userID || !users[userID]) {
     res.redirect("/register");
-  } else if (urlDatabase[shortURL].userID !== userID) {
-    res.redirect("/register");
-  } else {
-    const shortURL = req.params.shortURL;
-    delete urlDatabase[shortURL].longURL;
-    res.redirect(`/urls/`);
+    return;
   }
+  if (urlDatabase[shortURL].userID !== userID) {
+    res.redirect("/register");
+    return;
+  }
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL].longURL;
+  res.redirect(`/urls/`);
 });
 
 //sends a post to /urls/shorturl
