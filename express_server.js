@@ -160,7 +160,6 @@ app.get("/u/:shortURL", (req, res) => {
 //sends a post to /urls/shorturl/delete
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
-  const shortURL = req.params.shortURL;
   if (!userID || !users[userID]) {
     res.redirect("/register");
     return;
