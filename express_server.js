@@ -103,11 +103,13 @@ app.get("/urls/:shortURL", (req, res) => {
     res.redirect("/register");
     return;
   }
+
+  const shortURL = req.params.shortURL;
+
   if (urlDatabase[shortURL].userID !== userID) {
     res.redirect("/register");
     return;
   }
-  const shortURL = req.params.shortURL;
   if (userID !== urlDatabase[shortURL].userID) {
     res.status(401).send("You are not authorized to see this information");
   }
@@ -130,10 +132,7 @@ app.post("/urls", (req, res) => {
     res.redirect("/register");
     return;
   }
-  if (urlDatabase[shortURL].userID !== userID) {
-    res.redirect("/register");
-    return;
-  }
+
   if (!longURL.includes("http")) {
     longURL = `http://${longURL}`;
   }
@@ -146,15 +145,9 @@ app.post("/urls", (req, res) => {
 
 //redirects under certain conditions to longurl
 app.get("/u/:shortURL", (req, res) => {
-  const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  if (!userID || !users[userID]) {
-    res.redirect(longURL);
-  } else urlDatabase[shortURL].userID !== userID;
-  {
-    res.redirect("/register");
-  }
+  res.redirect(longURL);
 });
 
 //sends a post to /urls/shorturl/delete
@@ -164,12 +157,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect("/register");
     return;
   }
+
+  const shortURL = req.params.shortURL;
+
   if (urlDatabase[shortURL].userID !== userID) {
     res.redirect("/register");
     return;
   }
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL].longURL;
+
+  delete urlDatabase[shortURL];
   res.redirect(`/urls/`);
 });
 
